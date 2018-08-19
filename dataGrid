@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+//根据format属性的值自定义实现方法
+	function imageFormat(url){
+		console.log(typeof url);
+		return "<img width='60px' height='60px' src='"+url+"'/>";
+	}
+
+
+
+//data为获得的数据,element为table元素(jquery元素)
+	function autoCreateTable(data,element){
+		//拿到所有td
+		var tds = element.find("td");
+		//遍历data中的元素
+		for(var i = 0;i<data.length;i++){
+			//拿到data中某一个数据
+			var rowData = data[i];
+			//创建一个行
+			var tr = $("<tr>");
+			//创建td
+			//var td1 = $("<td>"+rowData.id+"</td>");
+			//var td2 = $("<td>"+rowData.name+"</td>");
+			//var td3 = $("<td>"+rowData.headImage+"</td>");
+			//var td4 = $("<td>"+rowData.dept+"</td>");
+			//tr.append(td1).append(td2).append(td3).append(td4);
+			//遍历tds
+			for(var j=0;j<tds.length;j++){
+				var td1 = $(tds[j]);//转化为jquery元素
+				//console.log(td);
+				//拿到field属性值
+				var field = td1.attr("field");
+				if(rowData[field]==null){
+					rowData[field]="";
+				}
+				var td2 = null;
+				//拿到format属性值
+				var format = td1.attr("format");
+				if(format){
+					//根据format自己实现相应的方法
+					var td2 = $("<td>"+window[format](rowData[field])+"</td>");
+				}else{
+					var td2 = $("<td>"+rowData[field]+"</td>"); 
+				}
+				tr.append(td2);
+			}
+			
+			//把tr加到table上
+			element.append(tr);		
+		}
+	}
+
+	function loadData(url,element){
+		//get方式发送请求
+		$.get(url,function(result){
+
+			autoCreateTable(result.data,element);
+			//console.log(result);
+		});
+		
+	}
+
+
+	//扩展一个dataGrid方法
+	$.fn.dataGrid = function(options){
+		
+		this.each(function(i,element){
+		//console.log(element);  element是dom元素 转成对象
+
+			loadData(options.url,$(element));
+		});
+		
+	}
+	
+$(function(){	
+	$("table").dataGrid({url:"data.json"});
+})
+
+</script>
+<style type="text/css">
+	table{
+		 border-collapse: true;
+		 width:600px;
+		 text-align: center;
+	}
+	table td{
+		border: 1px solid black;
+	}
+	
+</style>
+</head>
+<body>
+	<table>
+		<tr>
+			<td field="id">编号</td>
+			<td field="name">姓名</td>
+			<!-- 规定如果需要特殊处理的格式或者特殊判断某个值,
+			需要定义format属性,并根据format属性值自己实现相应的逻辑 -->
+			<td field="headImage" format="imageFormat">头像</td>
+			<td field="dept">部门</td>
+		</tr>
+	</table>
+
+</body>
+</html>
